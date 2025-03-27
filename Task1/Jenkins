@@ -11,6 +11,7 @@ pipeline {
                 sh '''
                     docker rm -f flask-app nginx-proxy || true
                     docker network rm flask_network || true
+                    sleep 2
                 '''
             }
         }
@@ -31,6 +32,7 @@ pipeline {
                 sh '''
                     echo "Creating Docker network..."
                     docker network create flask_network
+                    docker network ls
                 '''
             }
         }
@@ -46,7 +48,10 @@ pipeline {
                             flask-app
                         
                         echo "Waiting for Flask app to start..."
-                        sleep 5
+                        sleep 10
+                        
+                        echo "Flask app logs:"
+                        docker logs flask-app
                     '''
                 }
             }
@@ -64,7 +69,13 @@ pipeline {
                             nginx:latest
                         
                         echo "Waiting for NGINX to start..."
-                        sleep 5
+                        sleep 10
+                        
+                        echo "NGINX logs:"
+                        docker logs nginx-proxy
+                        
+                        echo "NGINX configuration:"
+                        docker exec nginx-proxy cat /etc/nginx/nginx.conf
                     '''
                 }
             }
@@ -75,7 +86,12 @@ pipeline {
                 sh '''
                     echo "Verifying deployment..."
                     docker ps
-                    echo "Testing application..."
+                    docker network inspect flask_network
+                    
+                    echo "Testing Flask app directly..."
+                    curl -v http://flask-app:5500 || true
+                    
+                    echo "Testing through NGINX..."
                     curl -v localhost:80
                 '''
             }
@@ -89,6 +105,8 @@ pipeline {
                 docker logs flask-app || true
                 echo "NGINX logs:"
                 docker logs nginx-proxy || true
+                echo "Network information:"
+                docker network inspect flask_network || true
             '''
             cleanWs()
         }
