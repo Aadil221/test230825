@@ -2,7 +2,7 @@ pipeline {
     agent any
     
     environment {
-        YOUR_NAME = 'Sahr'
+        YOUR_NAME = 'Aadil'
         DOCKER_NETWORK = 'flask_network'
         FLASK_APP_NAME = 'flask-app'
         NGINX_PROXY_NAME = 'nginx-proxy'
